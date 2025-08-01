@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flutter Code Analysis Report</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
+        .header { background-color: #2c3e50; color: white; padding: 20px; margin-bottom: 30px; border-radius: 5px; }
+        .section { margin-bottom: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 5px; }
+        .chart-container { width: 100%; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #3498db; color: white; }
+        tr:hover { background-color: #f5f5f5; }
+        .file-issues { margin-top: 20px; }
+        .issue { padding: 10px; margin-bottom: 10px; background-color: #fff; border-left: 4px solid #e74c3c; }
+        .issue-type { font-weight: bold; color: #e74c3c; }
+        .issue-line { color: #7f8c8d; font-size: 0.9em; }
+        .issue-desc { margin: 5px 0; }
+        .issue-snippet { font-family: monospace; background-color: #f0f0f0; padding: 5px; border-radius: 3px; }
+        .summary-card { display: inline-block; width: 30%; margin: 10px; padding: 15px; background-color: #fff; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
+        .summary-value { font-size: 2em; font-weight: bold; color: #2c3e50; }
+        .summary-label { color: #7f8c8d; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Flutter Code Analysis Report</h1>
+        <p>Generated on {{ now }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Project Summary</h2>
+        <div>
+            <div class="summary-card">
+                <div class="summary-value">{{ summary.total_files }}</div>
+                <div class="summary-label">Files Analyzed</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-value">{{ summary.total_issues }}</div>
+                <div class="summary-label">Total Issues Found</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-value">{{ (summary.total_issues / summary.total_files)|round(1) }}</div>
+                <div class="summary-label">Avg Issues per File</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Issue Distribution</h2>
+        <div class="chart-container">
+            {{ charts.issue_distribution }}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Issues by File</h2>
+        <div class="chart-container">
+            {{ charts.issue_by_file }}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Metrics Comparison</h2>
+        <div class="chart-container">
+            {{ charts.metrics_radar }}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Detailed File Analysis</h2>
+        {% for file_path, analysis in analysis_results.items() %}
+            <div class="file-analysis">
+                <h3>{{ file_path }}</h3>
+                <table>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>Total Lines</td>
+                        <td>{{ analysis.metrics.total_lines }}</td>
+                    </tr>
+                    <tr>
+                        <td>Code Lines</td>
+                        <td>{{ analysis.metrics.code_lines }}</td>
+                    </tr>
+                    <tr>
+                        <td>Comment Lines</td>
+                        <td>{{ analysis.metrics.comment_lines }}</td>
+                    </tr>
+                    <tr>
+                        <td>Comment Density</td>
+                        <td>{{ "%.1f"|format(analysis.metrics.comment_density) }}%</td>
+                    </tr>
+                    <tr>
+                        <td>Total Issues</td>
+                        <td>{{ analysis.issues|length }}</td>
+                    </tr>
+                </table>
+
+                <div class="file-issues">
+                    <h4>Issues Found:</h4>
+                    {% for issue in analysis.issues %}
+                        <div class="issue" id="issue-{{ file_path|replace('/', '-') }}-{{ issue.line_number }}">
+                            <div class="issue-type">{{ issue.issue_type }}</div>
+                            <div class="issue-line">Line {{ issue.line_number }}</div>
+                            <div class="issue-desc">{{ issue.description }}</div>
+                            <div class="issue-snippet">{{ issue.code_snippet }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Make issue links clickable to highlight them
+        document.querySelectorAll('.issue').forEach(issue => {
+            issue.addEventListener('click', function() {
+                // Remove highlight from all issues
+                document.querySelectorAll('.issue').forEach(i => {
+                    i.style.backgroundColor = '#fff';
+                });
+                
+                // Highlight clicked issue
+                this.style.backgroundColor = '#f0f7ff';
+                
+                // Scroll to the issue
+                this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        });
+    </script>
+</body>
+</html>
